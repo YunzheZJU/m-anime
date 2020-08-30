@@ -1,4 +1,10 @@
-class Tween extends HTMLElement {
+const attributes = ['width', 'height', 'x', 'y', 'color', 'origin']
+
+export class Tween extends HTMLElement {
+  static get observedAttributes() {
+    return attributes
+  }
+
   constructor() {
     super()
 
@@ -10,6 +16,10 @@ class Tween extends HTMLElement {
   }
 
   connectedCallback() {
+    if (!this.isConnected) {
+      return
+    }
+
     console.log('a-tween added to page')
   }
 
@@ -21,11 +31,11 @@ class Tween extends HTMLElement {
     console.log('a-tween moved to new page')
   }
 
-  attributeChangedCallback(name, oldValue, newValue) {
+  attributeChangedCallback(name, oldValue, value) {
     console.log('a-tween attributes changed')
     setTimeout(() => {
       this.dispatchEvent(new CustomEvent('tween', {
-        detail: { [name]: newValue },
+        detail: { name, value },
         bubbles: true,
         cancelable: true,
         composed: true,
@@ -34,5 +44,3 @@ class Tween extends HTMLElement {
     }, 0)
   }
 }
-
-customElements.define('a-tween', Tween)

@@ -1,31 +1,33 @@
-// noinspection CssUnresolvedCustomProperty
-class Entity extends HTMLElement {
-  static get observedAttributes() {
-    return ['width', 'height', 'x', 'y', 'color']
-  }
+import { format, uniqId } from './utils.js'
 
-  sheet = new CSSStyleSheet()
+const attributes = ['width', 'height', 'x', 'y', 'color', 'origin', 'duration']
+
+export class Entity extends HTMLElement {
+  static get observedAttributes() {
+    return attributes
+  }
 
   commonSheet = new CSSStyleSheet()
 
-  props = {
-    width: {
-      init: '100',
-      keyframes: {
-        100: {
-          to: '200',
-          duration: undefined,
-          easing: 'ease',
-        },
-      },
+  sheet = new CSSStyleSheet()
+
+  animationSheet = new CSSStyleSheet()
+
+  data = new Proxy({}, {
+    get(target, p, receiver) {
+      if (target.hasOwnProperty(p)) {
+        return target[p]
+      }
+
+      return {}
     },
-  }
-
-  getProp = name => {
-    return this.props[name]
-  }
-
-  getPropInit = name => this.getProp(name).init
+    set: (target, p, value) => {
+      target[p] = ['duration'].includes(p) ? value : format(value)
+      console.log(p, value)
+      this.updateSheet()
+      return target
+    },
+  })
 
   constructor() {
     super()
@@ -53,17 +55,21 @@ class Entity extends HTMLElement {
       }
     `)
 
-    shadow.adoptedStyleSheets = [this.commonSheet, this.sheet]
+    shadow.adoptedStyleSheets = [this.commonSheet, this.sheet, this.animationSheet]
 
     this.addEventListener('tween', event => {
       event.stopPropagation()
-      console.log(event)
+      const { detail: { name, value } } = event
+      this.data[name] = value
     })
   }
 
   connectedCallback() {
+    if (!this.isConnected) {
+      return
+    }
+
     console.log('a-entity added to page')
-    this.updateSheet()
   }
 
   disconnectedCallback() {
@@ -74,32 +80,53 @@ class Entity extends HTMLElement {
     console.log('a-entity moved to new page')
   }
 
-  attributeChangedCallback(name, oldValue, newValue) {
-    console.log('a-entity attributes changed', name, oldValue, newValue)
-    this.updateSheet()
+  attributeChangedCallback(name, oldValue, value) {
+    console.log('a-entity attributes changed', name, oldValue, value)
+    this.data[name] = value
   }
 
   updateSheet = () => {
     const [
       originX = mAnime.defaults.origin.x,
       originY = mAnime.defaults.origin.y,
-    ] = this.getAttribute('origin')?.split(' ')?.reverse() ?? []
-    // Define variables and resolve the default values
+    ] = this.data.origin.from?.split(' ')?.reverse() ?? []
+
+    // Define variables and resolve keywords and default values
     this.sheet.replaceSync(`
       :host > div {
-        --width: ${this.getAttribute('width') ?? '100'}${mAnime.defaults.units.length};
-        --height: ${this.getAttribute('height') ?? '100'}${mAnime.defaults.units.length};
-        --x: ${this.getAttribute('x') ?? '0'};
+        --width: ${this.data.width.from ?? '100'}${mAnime.defaults.units.length};
+        --height: ${this.data.height.from ?? '100'}${mAnime.defaults.units.length};
+        --x: ${this.data.x.from ?? '0'};
         --x-offset: 0px;
-        --y: ${this.getAttribute('y') ?? '0'};
+        --y: ${this.data.y.from ?? '0'};
         --y-offset: 0px;
-        --color: ${this.getAttribute('color') ?? 'black'};
-        --background-color: ${this.getAttribute('background-color') ?? 'var(--color)'};
+        --color: ${this.data.color.from ?? 'black'};
+        --background-color: ${this.data['background-color'].from ?? 'var(--color)'};
         --origin-x: ${mAnime.keywords.origin.x[originX]};
         --origin-y: ${mAnime.keywords.origin.y[originY]};
       }
     `)
+
+    const keyframes = Object.entries(this.data).filter(([key, value]) => {
+      return !['duration'].includes(key) && !!value.to
+    }).map(([key, value]) => {
+      const name = `kf-${uniqId()}`
+      return [name, `
+        @keyframes ${name} {
+          from { ${key}: ${value.from}${value.from.endsWith('%') ? '' : mAnime.defaults.units.length}; }
+          to   { ${key}: ${value.to}${value.to.endsWith('%') ? '' : mAnime.defaults.units.length}; }
+        }
+      `]
+    })
+
+    this.animationSheet.replaceSync(`
+      ${keyframes.map(([, value]) => value).join('')}
+    
+      :host > div {
+        animation: ${keyframes.map(([name]) => `
+          ${this.data.duration ?? mAnime.defaults.duration}${mAnime.defaults.units.time} ${mAnime.defaults.easing} ${mAnime.defaults.delay}${mAnime.defaults.units.time} both infinite ${name}
+        `).join(', ')};
+      }
+    `)
   }
 }
-
-customElements.define('a-entity', Entity)

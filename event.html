@@ -11,13 +11,11 @@
 </head>
 <body>
 <a-entity width="1280" height="720" color="lightgreen" origin="top left">
-  <a-entity x="50%" y="50%" width="50" height="200" color="red">
+  <a-entity x="50%" y="50%" width="50" height="200" color="red" duration="1">
     <a-tween width="from: 200; to: 100"></a-tween>
     <a-tween height="from: 200; to: 100"></a-tween>
   </a-entity>
 </a-entity>
 </body>
-<script src="event.js"></script>
-<script src="a-tween.js" defer></script>
-<script src="a-entity.js" defer></script>
+<script type="module" src="event.js"></script>
 </html>
