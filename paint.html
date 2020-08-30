@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Paint</title>
+  <style>
+    textarea {
+      /* The paint worklet subscribes to changes of these custom properties. */
+      --checkerboard-spacing: 10;
+      --checkerboard-size: 32;
+      background-image: paint(checkerboard);
+    }
+  </style>
+</head>
+<body>
+<textarea></textarea>
+</body>
+<script>
+  CSS.paintWorklet.addModule('checkerboard.js')
+</script>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Text mask</title>
+  <style>
+    .container {
+      background: white;
+      mix-blend-mode: multiply;
+    }
+
+    .text {
+      position: relative;
+      color: black;
+      font-size: 100px;
+      font-weight: bold;
+    }
+
+    .text:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background: linear-gradient(red, blue);
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .text-2 {
+      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      color: black;
+      font-size: 100px;
+      font-weight: bold;
+      background-image: linear-gradient(red, blue);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="text">
+    Hello, world
+  </div>
+</div>
+<div class="text-2">
+  Hello, world
+</div>
+</body>
+</html>

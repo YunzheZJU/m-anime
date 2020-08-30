@@ -1,0 +1,18 @@
+<frame width="1280" height="720">
+<scene in="fade" out="slide">
+  <rect height="from: 100; to: 200; duration: 3" opacity="from: 1; to: 0" duration="4">
+    <animate width="from: 100; to: 200" duration="3" delay="1"></animate>
+    <animate x="from: 100; to: 200" duration="4"></animate>
+    <animate duration="20">
+      <keyframe x="0" y="0" easing="ease-in"></keyframe>
+      <keyframe y="+=10" easing="ease-out"></keyframe>
+      <keyframe x="-=10" easing="ease-in-out"></keyframe>
+      <keyframe x="0" y="0" delay="2"></keyframe>
+    </animate>
+    <circle duplicate="5"/>
+  </rect>
+</scene>
+<scene>
+
+</scene>
+</frame>
